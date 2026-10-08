@@ -374,6 +374,16 @@ input {
   font-size: 0.8rem;
   font-weight: 600;
 }
+.tile-status {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+}
 .controls {
   display: flex;
   flex-wrap: wrap;

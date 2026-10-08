@@ -76,15 +76,20 @@ export function useCall(me, roomId, onError) {
     };
 
     pc.onconnectionstatechange = () => {
-      if (["failed", "closed"].includes(pc.connectionState)) closePC(pid);
+      if (["failed", "closed"].includes(pc.connectionState)) {
+        closePC(pid);
+        window.setTimeout(() => {
+          if (inCallRef.current) syncPeers();
+        }, 1000);
+      }
     };
 
     return pc;
   }
 
-  async function makeOffer(pid) {
+  async function makeOffer(pid, options) {
     const pc = getPC(pid);
-    const offer = await pc.createOffer();
+    const offer = await pc.createOffer(options);
     await pc.setLocalDescription(offer);
     await sendSignal(pid, { type: "offer", sdp: { type: offer.type, sdp: offer.sdp } });
   }
@@ -161,6 +166,42 @@ export function useCall(me, roomId, onError) {
     return unsub;
   }, [me, roomId]);
 
+  // Mobil tarayıcı ekran kilidinden döndüğünde WebRTC bağlantısını canlandır.
+  useEffect(() => {
+    if (!me || !roomId) return;
+
+    function recoverAfterBackground() {
+      if (document.visibilityState !== "visible" || !inCallRef.current) return;
+
+      const local = localRef.current;
+      setPresence({
+        inCall: true,
+        mic: local?.getAudioTracks().some((track) => track.enabled) ?? false,
+        video: local?.getVideoTracks().some((track) => track.enabled) ?? false,
+      }).catch(() => {});
+
+      const current = meRef.current;
+      if (!current) return;
+      for (const [pid, pc] of pcs.current) {
+        if (current.uid >= pid) continue;
+        if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+          closePC(pid);
+          continue;
+        }
+        pc.restartIce?.();
+        makeOffer(pid, { iceRestart: true }).catch(() => {});
+      }
+      syncPeers();
+    }
+
+    document.addEventListener("visibilitychange", recoverAfterBackground);
+    window.addEventListener("online", recoverAfterBackground);
+    return () => {
+      document.removeEventListener("visibilitychange", recoverAfterBackground);
+      window.removeEventListener("online", recoverAfterBackground);
+    };
+  }, [me, roomId]);
+
   // Bileşen kapanınca her şeyi bırak
   useEffect(
     () => () => {
@@ -182,6 +223,15 @@ export function useCall(me, roomId, onError) {
       return;
     }
 
+    // Mobil tarayıcılarda ses yönlendirmesi setSinkId yerine Audio Session ile yapılabilir.
+    if (navigator.audioSession) {
+      try {
+        navigator.audioSession.type = "playback";
+      } catch {
+        // Tarayıcı bu ses oturumu türünü kabul etmeyebilir.
+      }
+    }
+
     localRef.current = stream;
     setLocalStream(stream);
     setWithVideo(video);
@@ -191,7 +241,7 @@ export function useCall(me, roomId, onError) {
     setInCall(true);
 
     try {
-      await setPresence({ inCall: true, video });
+      await setPresence({ inCall: true, mic: true, video });
       syncPeers();
     } catch (e) {
       onError("Görüşmeye katılınamadı: " + e.message);
@@ -210,15 +260,16 @@ export function useCall(me, roomId, onError) {
     setInCall(false);
     setWithVideo(false);
 
-    await setPresence({ inCall: false, video: false }).catch(() => {});
+    await setPresence({ inCall: false, video: false, mic: false }).catch(() => {});
   }
 
-  function toggleTracks(kind, setter) {
+  async function toggleTracks(kind, setter) {
     const tracks = kind === "audio" ? localRef.current?.getAudioTracks() : localRef.current?.getVideoTracks();
     if (!tracks?.length) return;
     const next = !tracks[0].enabled;
     tracks.forEach((t) => (t.enabled = next));
     setter(next);
+    await setPresence(kind === "audio" ? { mic: next } : { video: next }).catch(() => {});
   }
 
   return {

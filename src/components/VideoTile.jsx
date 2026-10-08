@@ -1,11 +1,25 @@
 import React, { useEffect, useRef } from "react";
 
-export default function VideoTile({ stream, label, muted = false, mirrored = false, videoOff = false }) {
+export default function VideoTile({
+  stream,
+  label,
+  muted = false,
+  mirrored = false,
+  videoOff = false,
+  micOn = true,
+  cameraOn = true,
+  sinkId = "",
+}) {
   const ref = useRef(null);
 
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream || null;
   }, [stream]);
+
+  useEffect(() => {
+    if (!ref.current || muted || !sinkId || typeof ref.current.setSinkId !== "function") return;
+    ref.current.setSinkId(sinkId).catch(() => {});
+  }, [muted, sinkId, stream]);
 
   const showAvatar = !stream || videoOff;
 
@@ -18,6 +32,9 @@ export default function VideoTile({ stream, label, muted = false, mirrored = fal
         </div>
       )}
       <span className="tile-label">{label}</span>
+      <span className="tile-status" aria-label={`${micOn ? "Mikrofon açık" : "Mikrofon kapalı"}, ${cameraOn ? "kamera açık" : "kamera kapalı"}`}>
+        {micOn ? "🎤" : "🔇"} {cameraOn ? "📹" : "🚫"}
+      </span>
     </div>
   );
 }

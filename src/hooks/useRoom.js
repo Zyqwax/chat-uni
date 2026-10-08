@@ -26,7 +26,7 @@ export function useRoom(identity, roomId, onError) {
 
         await setDoc(
           doc(roomPeers(roomId), user.uid),
-          { name: current.name, session: current.session, inCall: false, video: false, updated: serverTimestamp() },
+          { name: current.name, session: current.session, inCall: false, mic: false, video: false, updated: serverTimestamp() },
           { merge: true },
         );
         await setDoc(userRoom(user.uid, roomId), { name: "Yeni oda", lastSeen: serverTimestamp() }, { merge: true });

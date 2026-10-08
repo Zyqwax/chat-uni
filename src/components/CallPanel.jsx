@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import VideoTile from "./VideoTile";
 
 export default function CallPanel({
@@ -12,10 +12,60 @@ export default function CallPanel({
   onToggleCam,
   onLeave,
 }) {
+  const [speakerMode, setSpeakerMode] = useState("speaker");
+  const [outputDevices, setOutputDevices] = useState([]);
+
+  const canChooseOutput = useMemo(
+    () => typeof HTMLMediaElement !== "undefined" && "setSinkId" in HTMLMediaElement.prototype,
+    [],
+  );
+  const canUseAudioSession = typeof navigator !== "undefined" && "audioSession" in navigator;
+
+  useEffect(() => {
+    if (!canChooseOutput || !navigator.mediaDevices?.enumerateDevices) return;
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      setOutputDevices(devices.filter((device) => device.kind === "audiooutput"));
+    }).catch(() => {});
+  }, [canChooseOutput]);
+
+  const outputDeviceId = useMemo(() => {
+    if (!canChooseOutput) return "";
+    const match = outputDevices.find((device) => {
+      const label = device.label.toLocaleLowerCase("tr");
+      return speakerMode === "speaker"
+        ? /speaker|hoparlör|default/.test(label)
+        : /earpiece|receiver|ahize|telefon/.test(label);
+    });
+    return match?.deviceId || "";
+  }, [canChooseOutput, outputDevices, speakerMode]);
+
+  function toggleSpeaker() {
+    if (!canChooseOutput && !canUseAudioSession) return;
+    setSpeakerMode((current) => {
+      const next = current === "speaker" ? "earpiece" : "speaker";
+      if (canUseAudioSession) {
+        try {
+          navigator.audioSession.type = next === "earpiece" ? "play-and-record" : "playback";
+        } catch {
+          // Fallback olarak setSinkId kullanılmaya devam eder.
+        }
+      }
+      return next;
+    });
+  }
+
   return (
     <section className="call" aria-label="Görüşme">
       <div className="grid">
-        <VideoTile stream={localStream} label="Sen" muted mirrored videoOff={!withVideo || !camOn} />
+        <VideoTile
+          stream={localStream}
+          label="Sen"
+          muted
+          mirrored
+          micOn={micOn}
+          cameraOn={withVideo && camOn}
+          videoOff={!withVideo || !camOn}
+        />
 
         {participants.map((peer) => (
           <VideoTile
@@ -23,6 +73,9 @@ export default function CallPanel({
             stream={remoteStreams[peer.id]}
             label={peer.name || "Arkadaş"}
             videoOff={!peer.video}
+            micOn={peer.mic !== false}
+            cameraOn={peer.video === true}
+            sinkId={outputDeviceId}
           />
         ))}
       </div>
@@ -37,6 +90,16 @@ export default function CallPanel({
             {camOn ? "📹 Kamera açık" : "🚫 Kamera kapalı"}
           </button>
         )}
+
+        <button
+          className="btn btn--toggle"
+          aria-pressed={speakerMode === "speaker"}
+          onClick={toggleSpeaker}
+          disabled={!canChooseOutput && !canUseAudioSession}
+          title={canChooseOutput || canUseAudioSession ? "Ses çıkışını değiştir" : "Bu tarayıcı ses çıkışını değiştirmeyi desteklemiyor"}
+        >
+          {speakerMode === "speaker" ? "🔊 Hoparlör" : "📞 Ahize"}
+        </button>
 
         <button className="btn btn--danger" onClick={onLeave}>
           Görüşmeden ayrıl

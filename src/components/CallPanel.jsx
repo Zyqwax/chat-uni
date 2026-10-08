@@ -11,6 +11,7 @@ export default function CallPanel({
   onToggleMic,
   onToggleCam,
   onLeave,
+  onError,
 }) {
   const [speakerMode, setSpeakerMode] = useState("speaker");
   const [outputDevices, setOutputDevices] = useState([]);
@@ -40,12 +41,17 @@ export default function CallPanel({
   }, [canChooseOutput, outputDevices, speakerMode]);
 
   function toggleSpeaker() {
-    if (!canChooseOutput && !canUseAudioSession) return;
+    if (!canChooseOutput && !canUseAudioSession) {
+      onError?.("Bu telefon tarayıcısı ses çıkışını uygulama içinden değiştirmeyi desteklemiyor. Hoparlör/ahizeyi telefonun ses menüsünden değiştir.");
+      return;
+    }
     setSpeakerMode((current) => {
       const next = current === "speaker" ? "earpiece" : "speaker";
       if (canUseAudioSession) {
         try {
-          navigator.audioSession.type = next === "earpiece" ? "play-and-record" : "playback";
+          // Her iki modda da mikrofonlu görüşme oturumu korunur; playback
+          // bazı telefonlarda uzak sesi tamamen susturabiliyor.
+          navigator.audioSession.type = "play-and-record";
         } catch {
           // Fallback olarak setSinkId kullanılmaya devam eder.
         }
@@ -95,8 +101,7 @@ export default function CallPanel({
           className="btn btn--toggle"
           aria-pressed={speakerMode === "speaker"}
           onClick={toggleSpeaker}
-          disabled={!canChooseOutput && !canUseAudioSession}
-          title={canChooseOutput || canUseAudioSession ? "Ses çıkışını değiştir" : "Bu tarayıcı ses çıkışını değiştirmeyi desteklemiyor"}
+          title={canChooseOutput || canUseAudioSession ? "Ses çıkışını değiştir" : "Telefonun ses menüsünü kullan"}
         >
           {speakerMode === "speaker" ? "🔊 Hoparlör" : "📞 Ahize"}
         </button>

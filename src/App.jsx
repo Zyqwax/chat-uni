@@ -122,6 +122,7 @@ export default function App() {
             onToggleMic={call.toggleMic}
             onToggleCam={call.toggleCam}
             onLeave={call.leaveCall}
+            onError={handleError}
           />
         )}
 

@@ -223,10 +223,10 @@ export function useCall(me, roomId, onError) {
       return;
     }
 
-    // Mobil tarayıcılarda ses yönlendirmesi setSinkId yerine Audio Session ile yapılabilir.
+    // Mikrofon + uzak ses aynı oturumda çalışmalı. "playback" bazı telefonlarda sesi kesiyor.
     if (navigator.audioSession) {
       try {
-        navigator.audioSession.type = "playback";
+        navigator.audioSession.type = "play-and-record";
       } catch {
         // Tarayıcı bu ses oturumu türünü kabul etmeyebilir.
       }

@@ -1,8 +1,8 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyBjCH07-E3NByT1VhQ0toqjjly9sVtBZ5I",
-  authDomain: "just-uni-a4607.firebaseapp.com",
-  projectId: "just-uni-a4607",
-  storageBucket: "just-uni-a4607.firebasestorage.app",
-  messagingSenderId: "111682974057",
-  appId: "1:111682974057:web:60f22b3a33e2cb349a4df8",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };

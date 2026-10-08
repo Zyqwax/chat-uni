@@ -7,7 +7,7 @@ export const ICE = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun.cloudflare.com:3478" }],
 };
 
-export const configured = !Object.values(firebaseConfig).some((v) => String(v).startsWith("BURAYA"));
+export const configured = Object.values(firebaseConfig).every(Boolean);
 
 const app = configured ? (getApps()[0] ?? initializeApp(firebaseConfig)) : null;
 

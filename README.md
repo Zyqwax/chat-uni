@@ -13,17 +13,15 @@ Ardından terminalde verilen localhost adresini aç.
 
 ## Firebase
 
-`src/App.jsx` içindeki `firebaseConfig` alanına Firebase Web App bilgilerini koy:
+Kök dizinde `.env` dosyası oluştur ve Firebase Web App bilgilerini ekle:
 
-```js
-const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "..."
-};
+```env
+VITE_FIREBASE_API_KEY="..."
+VITE_FIREBASE_AUTH_DOMAIN="..."
+VITE_FIREBASE_PROJECT_ID="..."
+VITE_FIREBASE_STORAGE_BUCKET="..."
+VITE_FIREBASE_MESSAGING_SENDER_ID="..."
+VITE_FIREBASE_APP_ID="..."
 ```
 
 Firebase Console'da:

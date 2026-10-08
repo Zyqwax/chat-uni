@@ -489,3 +489,111 @@ input {
     border-left: 1px solid var(--line);
   }
 }
+
+@media (max-width: 640px) {
+  .login {
+    place-items: start center;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
+  .login-card {
+    margin-block: auto;
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .join-room-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .topbar {
+    align-items: stretch;
+    gap: 9px;
+    padding: 10px 12px;
+  }
+
+  .topbar-title,
+  .room-name-form,
+  .topbar-actions,
+  .status {
+    width: 100%;
+  }
+
+  .topbar-title {
+    margin-right: 0;
+  }
+
+  .topbar h1 {
+    font-size: 1.08rem;
+  }
+
+  .topbar p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .room-name-form {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .room-name-form input {
+    width: auto;
+    min-width: 0;
+  }
+
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .topbar-actions .btn {
+    min-width: 0;
+    padding-inline: 0.45rem;
+    font-size: 0.82rem;
+  }
+
+  .status {
+    justify-content: center;
+    font-size: 0.82rem;
+  }
+
+  .call {
+    max-height: 44dvh;
+    padding: 8px;
+  }
+
+  .grid {
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  }
+
+  .messages {
+    padding: 10px;
+  }
+
+  .msg {
+    max-width: 88%;
+  }
+
+  .composer {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar-actions .btn {
+    font-size: 0.74rem;
+  }
+
+  .room-name-form {
+    grid-template-columns: 1fr auto;
+  }
+
+  .room-name-form label {
+    display: none;
+  }
+}
